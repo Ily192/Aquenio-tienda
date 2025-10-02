@@ -1,0 +1,53 @@
+/* Paleta de Colores de Aquenio: */
+/* --oro-rosa: #B76E79; (Acento/Joya) */
+/* --rosa-emplumado: #E8C9D4; (Base) */
+/* (El resto de los colores se usan para contraste) */
+
+body {
+    font-family: 'Raleway', sans-serif;
+    background-color: var(--blanco-crema);
+    color: #4a4a4a;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+:root {
+    --rosa-emplumado: #E8C9D4;
+    --lavanda-suave: #E4CDEB; /* Se mantiene para posible uso futuro */
+    --oro-rosa: #B76E79;
+    --blanco-crema: #FDF7F8;
+}
+
+/* ... (Todo el CSS de la respuesta anterior se mantiene sin cambios) ... */
+
+/* --- Botón de Acción (Comprar por WhatsApp) --- */
+.whatsapp-button {
+    background-color: var(--oro-rosa); 
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    margin-top: 15px;
+    width: 100%;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: background-color 0.3s;
+    font-size: 0.9em;
+}
+
+.whatsapp-button:hover {
+    background-color: #a05c65; /* Un tono más oscuro del Oro Rosa al pasar el mouse */
+}
+
+/* Estilo para el botón de producto agotado (opcional) */
+.whatsapp-button.out-of-stock-btn {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.out-of-stock-btn:hover {
+    background-color: #ccc;
+}
+/* ... (El resto del CSS de la respuesta anterior) ... */
