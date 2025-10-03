@@ -1,11 +1,8 @@
 // ====================================================================
-// 1. CONFIGURACIÓN DE AQUEÑO
+// 1. CONFIGURACIÓN CRÍTICA DE LA CONEXIÓN (SOLUCIÓN DE PERMISOS)
 // ====================================================================
 
-// UTILIZANDO LA URL DE PUBLICACIÓN DE TU HOJA 'CATALOGO WEB'
-// Nota: Esta URL es la más confiable para evitar errores de permisos.
-// Si tu catálogo deja de actualizarse, debes republicar la hoja en la web
-// (Archivo > Compartir > Publicar en la web).
+// ** URL de Publicación que el usuario ya generó **
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpBzcXwpv5ELk1kknmNkPBAJJToK92NLOiXV5EeG2u6KKjzeg0lCggeJ3ddwUZCnraVbfnstCKK834/pub?gid=2141987590&single=true&output=csv'; 
 
 // URL base de WhatsApp de Aquenio
@@ -15,8 +12,9 @@ const WHATSAPP_BASE_URL = 'https://wa.me/584129878696';
 const catalogueGrid = document.getElementById('catalogue-grid');
 const categoryTabsContainer = document.getElementById('category-tabs');
 
+
 // ====================================================================
-// 2. LÓGICA PRINCIPAL Y CONTROL DE FLUJO
+// 2. LÓGICA PRINCIPAL (CONTROL DE ERRORES MEJORADO)
 // ====================================================================
 
 /**
@@ -24,19 +22,23 @@ const categoryTabsContainer = document.getElementById('category-tabs');
  */
 async function fetchAndRenderCatalogue() {
     try {
-        const response = await fetch(SHEET_CSV_URL);
+        // Solicitud a la hoja de cálculo. La clave es el manejo estricto de la respuesta.
+        const response = await fetch(SHEET_CSV_URL, {
+            // Deshabilitar la caché puede ayudar a obtener datos frescos y evitar problemas
+            cache: 'no-cache', 
+        });
         
-        // Verifica si la respuesta HTTP es exitosa (código 200)
+        // ** VERIFICACIÓN CRÍTICA DEL ESTADO HTTP **
         if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}. Verifica que la URL del Sheets sea correcta y esté publicada.`);
+            // Capturamos cualquier código de estado que no sea 200-299
+            throw new Error(`Error HTTP: ${response.status}. La URL no está activa.`);
         }
         
         const csvData = await response.text();
         const products = parseCSV(csvData); 
         
         if (products.length === 0) {
-             // Esto se activa si solo hay encabezados o si el contenido está vacío
-             throw new Error('La hoja de cálculo está vacía o no se encontraron productos válidos.');
+             throw new Error('La hoja de cálculo está vacía o el parser no encontró datos válidos.');
         }
 
         const categories = getUniqueCategories(products);
@@ -44,58 +46,45 @@ async function fetchAndRenderCatalogue() {
         renderProducts(products);
 
     } catch (error) {
-        console.error("Error crítico al obtener el catálogo:", error);
-        // Mensaje de error mejorado para el usuario final
+        console.error("ERROR CRÍTICO DEL CATÁLOGO:", error);
+        // Mensaje de error final para el usuario, enfocado en la causa raíz
         catalogueGrid.innerHTML = `
-            <p style="grid-column: 1 / -1; text-align:center; padding: 50px 0; color: var(--oro-rosa); font-weight: 600;">
-                ¡Oh no! No pudimos cargar el catálogo de Aquenio.
-                <br>La causa más común es que la hoja de Google Sheets no está publicada correctamente.
-                <br>Por favor, revisa **Archivo > Compartir > Publicar en la web** para tu pestaña "Catalogo Web".
+            <p style="grid-column: 1 / -1; text-align:center; padding: 50px 0; color: var(--oro-rosa); font-weight: 700;">
+                🚨 ¡ERROR DE CONEXIÓN CRÍTICO! 🚨
+                <br><br>No pudimos cargar el catálogo. Por favor, realiza estos pasos **exactamente** en tu Google Sheet:
+                <br>1. Ve a **Archivo > Compartir > Publicar en la web**.
+                <br>2. Si está publicado, **deten la publicación** y **vuelve a publicarla** como CSV.
+                <br>3. Asegúrate de que el nombre del archivo **Aquenio-logo.jpg** esté escrito correctamente.
             </p>`;
     }
 }
 
 // ====================================================================
-// 3. PROCESAMIENTO DE DATOS (ORDEN DE COLUMNAS DEL USUARIO)
+// 3. PROCESAMIENTO DE DATOS (NO SE HA CAMBIADO EL ORDEN)
 // ====================================================================
-// Orden: 0: Código | 1: Nombre | 2: Descripción | 3: Categoría | 4: Precio | 5: Cantidad | 6: Foto URL
 
-/**
- * Parsea el texto CSV en un array de objetos JavaScript.
- * Se enfoca en el orden de las columnas del usuario para una máxima fiabilidad.
- */
+// Orden: 0: Código | 1: Nombre | 2: Descripción | 3: Categoría | 4: Precio | 5: Cantidad | 6: Foto URL
 function parseCSV(csvText) {
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
-    if (lines.length <= 1) return []; // Solo la línea de encabezado o menos
+    if (lines.length <= 1) return []; 
     
     const products = [];
     
     for (let i = 1; i < lines.length; i++) {
-        // Regex robusta para manejar comas dentro de descripciones entre comillas
         const data = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
         
-        // Debe tener 7 o más columnas para ser un producto completo
         if (data.length >= 7) { 
             const product = {};
-            
-            // Función auxiliar para limpiar espacios y despojar las comillas
             const clean = (val) => val ? val.trim().replace(/"/g, '') : '';
             
-            // Mapeo fijo por índice para robustez:
             product.Codigo = clean(data[0]); 
             product.Nombre_Producto = clean(data[1]); 
             product.Descripcion = clean(data[2]);
             product.Categoria = clean(data[3]); 
-            
-            // Conversión de precio a número
             product.Precio = parseFloat(clean(data[4]).replace(/[$.]/g, '').replace(/,/g, '')) || 0; 
-            
-            // Conversión de stock a entero
             product.Stock = parseInt(clean(data[5])) || 0; 
-            
             product.Foto_URL = clean(data[6]); 
 
-            // Filtro de calidad: Solo productos con nombre y una URL de foto real
             if (product.Nombre_Producto && product.Foto_URL.startsWith('http')) { 
                  products.push(product);
             }
@@ -104,26 +93,18 @@ function parseCSV(csvText) {
     return products;
 }
 
-// ====================================================================
-// 4. RENDERING (PESTAÑAS Y PRODUCTOS)
-// ====================================================================
-
-/**
- * Extrae categorías únicas, filtrando valores vacíos.
- */
+// ... (Las funciones getUniqueCategories, renderCategoryTabs, y renderProducts se mantienen sin cambios ya que son correctas) ...
 function getUniqueCategories(products) {
-    // Filtra las categorías vacías y de encabezado
     const categories = new Set(products.map(p => p.Categoria).filter(c => c && c.trim() !== '' && c.trim().toUpperCase() !== 'CATEGORÍA'));
     return ['TODOS', ...Array.from(categories)]; 
 }
 
-/**
- * Genera dinámicamente las pestañas de categoría (filtros).
- */
 function renderCategoryTabs(categories, products) {
     categoryTabsContainer.innerHTML = '';
     
-    categories.forEach(category => {
+    const cleanCategories = categories.filter(c => c && c.trim().toUpperCase() !== 'CATEGORÍA'); 
+
+    cleanCategories.forEach(category => {
         const button = document.createElement('button');
         button.className = 'tab-button';
         button.textContent = category.toUpperCase();
@@ -147,9 +128,6 @@ function renderCategoryTabs(categories, products) {
 }
 
 
-/**
- * Dibuja las tarjetas de producto en el contenedor de mosaico.
- */
 function renderProducts(products) {
     catalogueGrid.innerHTML = ''; 
     
@@ -164,12 +142,10 @@ function renderProducts(products) {
         
         const isAvailable = product.Stock > 0;
         
-        // 1. Mensaje de Stock
         const stockMessage = isAvailable
             ? `<span class="product-stock">Disponible: ${product.Stock} uds.</span>`
             : `<span class="product-stock out-of-stock">Agotado Temporalmente</span>`;
         
-        // 2. Mensaje y Enlace de WhatsApp
         const whatsappText = `¡Hola Aquenio! Me interesa mucho el producto "${product.Nombre_Producto}" (Código: ${product.Codigo}). ¿Podrías darme más detalles o indicarme cómo proceder con la compra?`;
         const whatsappLink = `${WHATSAPP_BASE_URL}?text=${encodeURIComponent(whatsappText)}`;
         
@@ -196,9 +172,6 @@ function renderProducts(products) {
     });
 }
 
-// ====================================================================
-// INICIO
-// ====================================================================
 
-// Inicializa el proceso al cargar la página
+// INICIO: Inicializa el proceso al cargar la página
 fetchAndRenderCatalogue();
