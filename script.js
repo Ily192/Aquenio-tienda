@@ -1,13 +1,10 @@
 // ====================================================================
-// 1. CONFIGURACIÓN CRÍTICA DE LA CONEXIÓN (SOLUCIÓN API VISUALIZATION)
+// 1. CONFIGURACIÓN DE CONEXIÓN CRÍTICA (APPS SCRIPT)
 // ====================================================================
 
-// IDs Confirmados y URL más robusta (Google Visualization API)
-const SHEET_ID = '1BA_-hmC9Hei4P0yeRv97eP47_nOe0J_v35zDkVHKAYU'; 
-const GID = '2141987590'; 
-
-// Esta URL es la MÁS ROBUSTA. Si falla, el problema es el permiso de la hoja.
-const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`; 
+// ⚠️ ¡ACCIÓN REQUERIDA! PEGA AQUÍ LA URL COMPLETA DE TU APLICACIÓN WEB 
+//    DE GOOGLE APPS SCRIPT (la que termina en /exec o /dev).
+const SHEET_JSON_URL = 'https://script.google.com/macros/s/AKfycbwDhizn5GWJpmSdRiL-aImwuZcm3ImvodsjTuYV8ws2VX8Vw5T4h7Hge3LQr1MIje9iQw/exec'; 
 
 // URL base de WhatsApp de Aquenio
 const WHATSAPP_BASE_URL = 'https://wa.me/584129878696'; 
@@ -18,93 +15,65 @@ const categoryTabsContainer = document.getElementById('category-tabs');
 
 
 // ====================================================================
-// 2. LÓGICA PRINCIPAL CON DIAGNÓSTICO AVANZADO
+// 2. LÓGICA PRINCIPAL: CARGA Y MANEJO DE JSON
 // ====================================================================
 
 /**
- * Función principal: obtiene los datos, los procesa y renderiza el catálogo.
+ * Función principal: obtiene los datos de la API de Apps Script y renderiza el catálogo.
  */
 async function fetchAndRenderCatalogue() {
-    console.log("Iniciando solicitud a Google Sheets con URL:", SHEET_CSV_URL); // Diagnóstico
+    console.log("Iniciando solicitud a Apps Script API con URL:", SHEET_JSON_URL);
     
     try {
-        // Opción crítica: 'no-cache' fuerza una nueva solicitud a Google
-        const response = await fetch(SHEET_CSV_URL, {
-            cache: 'no-cache', 
-        });
+        const response = await fetch(SHEET_JSON_URL);
         
-        // VERIFICACIÓN CRÍTICA DEL ESTADO HTTP
         if (!response.ok) {
-            console.error(`ERROR HTTP DETECTADO: Estado ${response.status} ${response.statusText}`);
-            throw new Error(`Error HTTP: ${response.status}. La hoja no es accesible públicamente.`);
+            throw new Error(`Error HTTP ${response.status}: La API no respondió correctamente.`);
         }
         
-        const csvData = await response.text();
-        const products = parseCSV(csvData); 
+        // El script de Google ahora devuelve un array de objetos JSON limpio
+        const products = await response.json(); 
         
-        if (products.length === 0) {
-             console.warn("ADVERTENCIA: CSV obtenido, pero no se encontraron productos válidos después de parsear.");
-             throw new Error('La hoja está vacía o el formato de datos es incorrecto.');
+        // Verificación de datos
+        if (!Array.isArray(products) || products.length === 0 || products.hasOwnProperty('error')) {
+             console.error("Respuesta de API vacía o con error:", products.error || 'Datos no válidos.');
+             throw new Error('La API devolvió un conjunto de datos vacío o un error. Verifica tu Apps Script.');
         }
 
         console.log(`Catálogo cargado exitosamente. Productos encontrados: ${products.length}`);
+        
         const categories = getUniqueCategories(products);
         renderCategoryTabs(categories, products);
         renderProducts(products);
 
     } catch (error) {
-        console.error("FALLA DE CONEXIÓN O PARSEO:", error);
-        // Mensaje de error para el cliente
+        console.error("FALLA DE CONEXIÓN CRÍTICA CON APPS SCRIPT:", error);
+        // Mensaje de error final para el cliente, enfocado en el despliegue de la API
         catalogueGrid.innerHTML = `
             <p style="grid-column: 1 / -1; text-align:center; padding: 50px 0; color: var(--oro-rosa); font-weight: 700;">
-                ❌ NO PUDIMOS CARGAR EL CATÁLOGO (Código: ${error.message || 'CORS'}).
-                <br><br>👉 **ACCIÓN REQUERIDA:** La hoja de cálculo no tiene el permiso de lectura correcto. 
-                <br>Por favor, **DETENGA** y **REPUBLIQUE** la pestaña "Catalogo Web" en formato CSV inmediatamente.
+                ❌ ¡ERROR CRÍTICO! LA API NO CARGÓ LOS DATOS. ❌
+                <br><br>Por favor, confirma que el **DESPLIEGUE** de tu Apps Script tenga acceso a **"Cualquiera"**.
             </p>`;
     }
 }
 
+
 // ====================================================================
-// 3. PROCESAMIENTO DE DATOS Y RENDERING (Se mantiene sólido)
+// 3. FUNCIONES DE PROCESAMIENTO Y RENDERING
 // ====================================================================
 
-// [*** Mantenemos las funciones parseCSV, getUniqueCategories, renderCategoryTabs, y renderProducts ***]
-// (El resto del código se pega aquí sin cambios)
-
-function parseCSV(csvText) {
-    const lines = csvText.split('\n').filter(line => line.trim() !== '');
-    if (lines.length <= 1) return []; 
-    
-    const products = [];
-    
-    for (let i = 1; i < lines.length; i++) {
-        const data = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
-        
-        if (data.length >= 7) { 
-            const product = {};
-            const clean = (val) => val ? val.trim().replace(/"/g, '') : '';
-            
-            product.Codigo = clean(data[0]); 
-            product.Nombre_Producto = clean(data[1]); 
-            product.Descripcion = clean(data[2]);
-            product.Categoria = clean(data[3]); 
-            product.Precio = parseFloat(clean(data[4]).replace(/[$.]/g, '').replace(/,/g, '')) || 0; 
-            product.Stock = parseInt(clean(data[5])) || 0; 
-            product.Foto_URL = clean(data[6]); 
-
-            if (product.Nombre_Producto && product.Foto_URL.startsWith('http')) { 
-                 products.push(product);
-            }
-        }
-    }
-    return products;
-}
-
+/**
+ * Extrae categorías únicas de los objetos JSON.
+ */
 function getUniqueCategories(products) {
+    // Filtra las categorías vacías y de encabezado
     const categories = new Set(products.map(p => p.Categoria).filter(c => c && c.trim() !== '' && c.trim().toUpperCase() !== 'CATEGORÍA'));
     return ['TODOS', ...Array.from(categories)]; 
 }
 
+/**
+ * Genera dinámicamente las pestañas de categoría (filtros).
+ */
 function renderCategoryTabs(categories, products) {
     categoryTabsContainer.innerHTML = '';
     
@@ -134,6 +103,9 @@ function renderCategoryTabs(categories, products) {
 }
 
 
+/**
+ * Dibuja las tarjetas de producto utilizando los datos del JSON.
+ */
 function renderProducts(products) {
     catalogueGrid.innerHTML = ''; 
     
@@ -146,12 +118,15 @@ function renderProducts(products) {
         const card = document.createElement('div');
         card.className = 'product-card';
         
+        // Las claves coinciden con las propiedades que definimos en el Apps Script
         const isAvailable = product.Stock > 0;
         
+        // 1. Mensaje de Stock
         const stockMessage = isAvailable
             ? `<span class="product-stock">Disponible: ${product.Stock} uds.</span>`
             : `<span class="product-stock out-of-stock">Agotado Temporalmente</span>`;
         
+        // 2. Mensaje y Enlace de WhatsApp
         const whatsappText = `¡Hola Aquenio! Me interesa mucho el producto "${product.Nombre_Producto}" (Código: ${product.Codigo}). ¿Podrías darme más detalles o indicarme cómo proceder con la compra?`;
         const whatsappLink = `${WHATSAPP_BASE_URL}?text=${encodeURIComponent(whatsappText)}`;
         
@@ -169,7 +144,7 @@ function renderProducts(products) {
                 <p class="product-category">${product.Categoria}</p>
                 <p class="product-code">Cód: ${product.Codigo}</p>
                 <p class="product-description">${product.Descripcion}</p>
-                <p class="product-price">$${product.Precio.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</p>
+                <p class="product-price">$${Number(product.Precio).toLocaleString('es-VE', { minimumFractionDigits: 2 })}</p>
                 <p>${stockMessage}</p>
                 ${buttonTag}
             </div>
@@ -178,5 +153,9 @@ function renderProducts(products) {
     });
 }
 
-// INICIO: Inicializa el proceso al cargar la página
+// ====================================================================
+// INICIO
+// ====================================================================
+
+// Inicializa el proceso al cargar la página
 fetchAndRenderCatalogue();
