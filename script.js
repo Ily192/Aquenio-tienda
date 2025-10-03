@@ -1,16 +1,12 @@
 // ====================================================================
-// 1. CONFIGURACIÓN CRÍTICA DE LA CONEXIÓN (SOLUCIÓN DE PERMISOS)
+// 1. CONFIGURACIÓN CRÍTICA DE LA CONEXIÓN (SOLUCIÓN API VISUALIZATION)
 // ====================================================================
 
-// ** URL de Publicación que el usuario ya generó **
-//const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpBzcXwpv5ELk1kknmNkPBAJJToK92NLOiXV5EeG2u6KKjzeg0lCggeJ3ddwUZCnraVbfnstCKK834/pub?gid=2141987590&single=true&output=csv'; 
-
-// Tus IDs
+// IDs Confirmados y URL más robusta (Google Visualization API)
 const SHEET_ID = '1BA_-hmC9Hei4P0yeRv97eP47_nOe0J_v35zDkVHKAYU'; 
 const GID = '2141987590'; 
 
-// ** ESTA ES LA URL MÁS ROBUSTA CONTRA ERRORES CORS **
-// Usamos la API de Google Visualization para forzar la salida CSV.
+// Esta URL es la MÁS ROBUSTA. Si falla, el problema es el permiso de la hoja.
 const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`; 
 
 // URL base de WhatsApp de Aquenio
@@ -22,56 +18,59 @@ const categoryTabsContainer = document.getElementById('category-tabs');
 
 
 // ====================================================================
-// 2. LÓGICA PRINCIPAL (CONTROL DE ERRORES MEJORADO)
+// 2. LÓGICA PRINCIPAL CON DIAGNÓSTICO AVANZADO
 // ====================================================================
 
 /**
  * Función principal: obtiene los datos, los procesa y renderiza el catálogo.
  */
 async function fetchAndRenderCatalogue() {
+    console.log("Iniciando solicitud a Google Sheets con URL:", SHEET_CSV_URL); // Diagnóstico
+    
     try {
-        // Solicitud a la hoja de cálculo. La clave es el manejo estricto de la respuesta.
+        // Opción crítica: 'no-cache' fuerza una nueva solicitud a Google
         const response = await fetch(SHEET_CSV_URL, {
-            // Deshabilitar la caché puede ayudar a obtener datos frescos y evitar problemas
             cache: 'no-cache', 
         });
         
-        // ** VERIFICACIÓN CRÍTICA DEL ESTADO HTTP **
+        // VERIFICACIÓN CRÍTICA DEL ESTADO HTTP
         if (!response.ok) {
-            // Capturamos cualquier código de estado que no sea 200-299
-            throw new Error(`Error HTTP: ${response.status}. La URL no está activa.`);
+            console.error(`ERROR HTTP DETECTADO: Estado ${response.status} ${response.statusText}`);
+            throw new Error(`Error HTTP: ${response.status}. La hoja no es accesible públicamente.`);
         }
         
         const csvData = await response.text();
         const products = parseCSV(csvData); 
         
         if (products.length === 0) {
-             throw new Error('La hoja de cálculo está vacía o el parser no encontró datos válidos.');
+             console.warn("ADVERTENCIA: CSV obtenido, pero no se encontraron productos válidos después de parsear.");
+             throw new Error('La hoja está vacía o el formato de datos es incorrecto.');
         }
 
+        console.log(`Catálogo cargado exitosamente. Productos encontrados: ${products.length}`);
         const categories = getUniqueCategories(products);
         renderCategoryTabs(categories, products);
         renderProducts(products);
 
     } catch (error) {
-        console.error("ERROR CRÍTICO DEL CATÁLOGO:", error);
-        // Mensaje de error final para el usuario, enfocado en la causa raíz
+        console.error("FALLA DE CONEXIÓN O PARSEO:", error);
+        // Mensaje de error para el cliente
         catalogueGrid.innerHTML = `
             <p style="grid-column: 1 / -1; text-align:center; padding: 50px 0; color: var(--oro-rosa); font-weight: 700;">
-                🚨 ¡ERROR DE CONEXIÓN CRÍTICO! 🚨
-                <br><br>No pudimos cargar el catálogo. Por favor, realiza estos pasos **exactamente** en tu Google Sheet:
-                <br>1. Ve a **Archivo > Compartir > Publicar en la web**.
-                <br>2. Si está publicado, **deten la publicación** y **vuelve a publicarla** como CSV.
-                <br>3. Asegúrate de que el nombre del archivo **Aquenio-logo.jpg** esté escrito correctamente.
+                ❌ NO PUDIMOS CARGAR EL CATÁLOGO (Código: ${error.message || 'CORS'}).
+                <br><br>👉 **ACCIÓN REQUERIDA:** La hoja de cálculo no tiene el permiso de lectura correcto. 
+                <br>Por favor, **DETENGA** y **REPUBLIQUE** la pestaña "Catalogo Web" en formato CSV inmediatamente.
             </p>`;
     }
 }
 
 // ====================================================================
-// 3. PROCESAMIENTO DE DATOS (NO SE HA CAMBIADO EL ORDEN)
+// 3. PROCESAMIENTO DE DATOS Y RENDERING (Se mantiene sólido)
 // ====================================================================
 
-// Orden: 0: Código | 1: Nombre | 2: Descripción | 3: Categoría | 4: Precio | 5: Cantidad | 6: Foto URL
+// [*** Mantenemos las funciones parseCSV, getUniqueCategories, renderCategoryTabs, y renderProducts ***]
+// (El resto del código se pega aquí sin cambios)
+
 function parseCSV(csvText) {
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
     if (lines.length <= 1) return []; 
@@ -101,7 +100,6 @@ function parseCSV(csvText) {
     return products;
 }
 
-// ... (Las funciones getUniqueCategories, renderCategoryTabs, y renderProducts se mantienen sin cambios ya que son correctas) ...
 function getUniqueCategories(products) {
     const categories = new Set(products.map(p => p.Categoria).filter(c => c && c.trim() !== '' && c.trim().toUpperCase() !== 'CATEGORÍA'));
     return ['TODOS', ...Array.from(categories)]; 
@@ -180,7 +178,5 @@ function renderProducts(products) {
     });
 }
 
-
 // INICIO: Inicializa el proceso al cargar la página
 fetchAndRenderCatalogue();
-
