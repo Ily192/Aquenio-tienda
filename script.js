@@ -3,7 +3,15 @@
 // ====================================================================
 
 // ** URL de Publicación que el usuario ya generó **
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpBzcXwpv5ELk1kknmNkPBAJJToK92NLOiXV5EeG2u6KKjzeg0lCggeJ3ddwUZCnraVbfnstCKK834/pub?gid=2141987590&single=true&output=csv'; 
+//const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpBzcXwpv5ELk1kknmNkPBAJJToK92NLOiXV5EeG2u6KKjzeg0lCggeJ3ddwUZCnraVbfnstCKK834/pub?gid=2141987590&single=true&output=csv'; 
+
+// Tus IDs
+const SHEET_ID = '1BA_-hmC9Hei4P0yeRv97eP47_nOe0J_v35zDkVHKAYU'; 
+const GID = '2141987590'; 
+
+// ** ESTA ES LA URL MÁS ROBUSTA CONTRA ERRORES CORS **
+// Usamos la API de Google Visualization para forzar la salida CSV.
+const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`; 
 
 // URL base de WhatsApp de Aquenio
 const WHATSAPP_BASE_URL = 'https://wa.me/584129878696'; 
@@ -175,3 +183,4 @@ function renderProducts(products) {
 
 // INICIO: Inicializa el proceso al cargar la página
 fetchAndRenderCatalogue();
+
