@@ -4,17 +4,15 @@
 // ====================================================================
 
 // El ID de tu Google Sheet (la cadena corta de tu URL de edición)
-const SHEET_ID = '1BA_-hmC9Hei4P0yeRv97eP47_nOe0J_v35zDkVHKAYU'; 
-
+//const SHEET_ID = '1BA_-hmC9Hei4P0yeRv97eP47_nOe0J_v35zDkVHKAYU'; 
 // El GID de la pestaña 'Catalogo Web' (identificador numérico)
-const GID = '2141987590'; 
+//const GID = '2141987590'; 
 
 // URL base de WhatsApp de Aquenio
 const WHATSAPP_BASE_URL = 'https://wa.me/584129878696'; 
 
-// URL que solicita los datos en formato CSV de forma robusta por ID y GID.
-const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`; 
-
+// Usar la URL de Publicación Codificada
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpBzcXwpv5ELk1kknmNkPBAJJToK92NLOiXV5EeG2u6KKjzeg0lCggeJ3ddwUZCnraVbfnstCKK834/pub?gid=2141987590&single=true&output=csv'; 
 // ====================================================================
 // LÓGICA DE CATÁLOGO (NO MODIFICAR)
 // ====================================================================
@@ -167,3 +165,4 @@ function renderProducts(products) {
 }
 
 fetchAndRenderCatalogue();
+
