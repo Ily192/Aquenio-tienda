@@ -110,30 +110,45 @@ function renderProducts(products) {
         return;
     }
 
+    // ... (dentro de products.forEach)
+
     products.forEach(product => {
         const isAvailable = product.Stock > 0;
         const whatsappText = `Hola, me interesa "${product.Nombre_Producto}" (Código: ${product.Codigo}).`;
         const whatsappLink = `${WHATSAPP_BASE_URL}?text=${encodeURIComponent(whatsappText)}`;
         
-        // Mensaje de stock detallado
-        const stockMessage = isAvailable 
-            ? `Disponible: ${product.Stock} uds.` 
-            : "Agotado Temporalmente";
+        // Tailwind: Clases para Stock
+        const stockMessageClasses = isAvailable 
+            ? 'text-green-600 font-semibold text-sm' 
+            : 'out-of-stock font-semibold text-sm'; 
+        const buttonClass = isAvailable ? 'bg-oro-rosa hover:bg-oro-rosa/90' : 'out-of-stock-btn';
 
         const card = document.createElement("div");
-        card.className = "product-card";
+        // Tailwind: Tarjeta con sombra sutil y efecto hover de "elevación"
+        card.className = "product-card bg-white rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1 text-center";
+        
         card.innerHTML = `
-            <img src="${product.Foto_URL}" alt="${product.Nombre_Producto}" class="product-image" loading="lazy">
-            <div class="product-details">
-                <h3>${product.Nombre_Producto}</h3>
-                <p>${product.Categoria}</p>
-                <p>Cód: ${product.Codigo}</p>
-                <p class="product-description">${product.Descripcion}</p>
-                <p class="product-price">$${Number(product.Precio).toLocaleString("es-VE", { minimumFractionDigits: 2 })}</p>
-                <p class="${isAvailable ? 'product-stock' : 'product-stock out-of-stock'}">${stockMessage}</p>
+            <img src="${product.Foto_URL}" alt="${product.Nombre_Producto}" class="w-full h-80 object-cover block" loading="lazy">
+            <div class="product-details p-5">
+                <p class="text-oro-rosa font-semibold uppercase text-xs mb-1">${product.Categoria}</p>
+                <h3 class="font-semibold text-lg mt-1 mb-1">${product.Nombre_Producto}</h3>
+                <p class="text-gray-400 text-sm mb-3">Cód: ${product.Codigo}</p>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-3">${product.Descripcion}</p>
+                <p class="text-xl text-gray-800 font-bold mb-2">$${Number(product.Precio).toLocaleString("es-VE", { minimumFractionDigits: 2 })}</p>
+                
+                <p class="${stockMessageClasses}">
+                    ${isAvailable ? `Disponible: ${product.Stock} uds.` : "Agotado Temporalmente"}
+                </p>
+                
                 ${isAvailable 
-                    ? `<a href="${whatsappLink}" target="_blank" rel="noopener noreferrer"><button class="whatsapp-button">Comprar por WhatsApp</button></a>`
-                    : `<button class="whatsapp-button" disabled>Agotado</button>`}
+                    ? `<a href="${whatsappLink}" target="_blank" rel="noopener noreferrer" class="block mt-4">
+                        <button class="${buttonClass} text-white py-3 px-5 w-full rounded-md font-semibold uppercase text-sm transition duration-300">
+                            Comprar por WhatsApp
+                        </button>
+                       </a>`
+                    : `<button class="${buttonClass} text-white py-3 px-5 w-full rounded-md font-semibold uppercase text-sm" disabled>
+                            Agotado
+                        </button>`}
             </div>
         `;
         catalogueGrid.appendChild(card);
@@ -156,3 +171,4 @@ async function init() {
 }
 
 init();
+
