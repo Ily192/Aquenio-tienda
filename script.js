@@ -1,6 +1,6 @@
 // 🔗 CONFIGURACIÓN
 const SHEET_ID = "1yj-uxy_puPfjcOZbqjeUBuMjRCwHsjSh6UNNEEmikvk"; 
-const API_KEY = "AQ.Ab8RN6JdsQ8I3K2ZP7yYUDqvpxePVNq2_uy_UAUtI8tzTeMXIw";     
+const API_KEY = "AIzaSyCZS-GAGD2ErO1ELvT0I7_KguW_83MSBl4";     
 const RANGE = "Catalogo!A2:G"; // Ajusta si tu hoja tiene otro nombre
 const SHEET_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(RANGE)}?key=${API_KEY}`;
 
@@ -110,4 +110,5 @@ async function init() {
 }
 
 init();
+
 
