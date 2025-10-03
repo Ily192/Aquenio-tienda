@@ -4,7 +4,7 @@
 
 // ⚠️ ¡ACCIÓN REQUERIDA! PEGA AQUÍ LA URL COMPLETA DE TU APLICACIÓN WEB 
 //    DE GOOGLE APPS SCRIPT (la que termina en /exec o /dev).
-const SHEET_JSON_URL = 'https://script.google.com/macros/s/AKfycbwDhizn5GWJpmSdRiL-aImwuZcm3ImvodsjTuYV8ws2VX8Vw5T4h7Hge3LQr1MIje9iQw/exec'; 
+const SHEET_JSON_URL = 'https://script.google.com/macros/s/AKfycbysoB0D38X9_eLLbHQRA0SPWEqkStpqCEM_GqLvw3NFzuSo7M6Dj9Ne7Yf3MMAdSuuTKA/exec'; 
 
 // URL base de WhatsApp de Aquenio
 const WHATSAPP_BASE_URL = 'https://wa.me/584129878696'; 
@@ -159,4 +159,5 @@ function renderProducts(products) {
 
 // Inicializa el proceso al cargar la página
 fetchAndRenderCatalogue();
+
 
