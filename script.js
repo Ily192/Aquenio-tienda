@@ -1,7 +1,7 @@
 // 🔗 CONFIGURACIÓN
-const SHEET_ID = "1BA_-hmC9Hei4P0yeRv97eP47_nOe0J_v35zDkVHKAYU"; 
-const API_KEY = "AIzaSyBzVhQvORVV_iCSGSqsq550Cx8JoFe8hVU";     
-const RANGE = "Catalogo Web!A2:G"; // Ajusta si tu hoja tiene otro nombre
+const SHEET_ID = "1yj-uxy_puPfjcOZbqjeUBuMjRCwHsjSh6UNNEEmikvk"; 
+const API_KEY = "AQ.Ab8RN6JdsQ8I3K2ZP7yYUDqvpxePVNq2_uy_UAUtI8tzTeMXIw";     
+const RANGE = "Catalogo!A2:G"; // Ajusta si tu hoja tiene otro nombre
 const SHEET_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(RANGE)}?key=${API_KEY}`;
 
 // WhatsApp de contacto
@@ -110,3 +110,4 @@ async function init() {
 }
 
 init();
+
