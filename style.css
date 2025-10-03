@@ -1,7 +1,11 @@
 /* ==================================================================== */
-/* 1. CONFIGURACIÓN GLOBAL Y PALETA DE COLORES DE AQUEÑO */
+/* 1. CONFIGURACIÓN GLOBAL Y PALETA DE COLORES DE AQUENIO */
 /* ==================================================================== */
 
+/* Ajuste para el header - Simplificado con Tailwind */
+.header {
+    background-color: var(--rosa-emplumado); /* Tono base que evoca calma */
+}
 /* Tailwind necesita las variables de color definidas en CSS */
 :root {
     /* Paleta de Colores de Aquenio: */
@@ -62,3 +66,4 @@ tailwind.config = {
 .tab-button:hover {
     color: var(--oro-rosa); 
 }
+
