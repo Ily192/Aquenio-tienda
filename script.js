@@ -1,23 +1,21 @@
 // ====================================================================
-// 🔗 CONFIGURACIÓN DE PRODUCCIÓN (Google Sheets API v4)
+// 🔗 CONFIGURACIÓN
 // ====================================================================
-
-// Tus credenciales verificadas. Usa la CLAVE API que comienza con AIzaSy.
 const SHEET_ID = "1yj-uxy_puPfjcOZbqjeUBuMjRCwHsjSh6UNNEEmikvk"; 
 const API_KEY = "AIzaSyCZS-GAGD2ErO1ELvT0I7_KguW_83MSBl4"; 
-const RANGE = "Catalogo!A2:G"; // Rango de datos (inicia en A2 para omitir encabezados)
+const RANGE = "Catalogo!A2:G"; // Ajusta si tu hoja tiene otro nombre
 const SHEET_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(RANGE)}?key=${API_KEY}`;
 
 // WhatsApp de contacto
 const WHATSAPP_BASE_URL = "https://wa.me/584129878696";
 
-// Contenedores HTML
+// Contenedores
 const catalogueGrid = document.getElementById("catalogue-grid");
 const categoryTabsContainer = document.getElementById("category-tabs");
 
 
 // ====================================================================
-// 🛠️ 1. FUNCIONES CRÍTICAS DE LIMPIEZA Y CORRECCIÓN DE URL
+// 🛠️ FUNCIÓN CRÍTICA: CORRECCIÓN DE URL DE DRIVE
 // ====================================================================
 
 /**
@@ -43,73 +41,40 @@ function convertDriveUrl(url) {
 }
 
 
-/**
- * Mapea la matriz de valores de la API a un array de objetos con limpieza de datos.
- * Asume el orden: 0: Código | 1: Nombre | 2: Descrip. | 3: Categoría | 4: Precio | 5: Stock | 6: Foto URL
- */
-function mapSheetDataToProducts(rows) {
-    return rows.map(row => {
-        // CRÍTICO: Conversión de URL de Drive
-        const cleanedDriveUrl = convertDriveUrl(row[6]); 
-
-        // LIMPIEZA DE DATOS: Asegurar números válidos
-        const rawPrice = String(row[4] || '0').replace(/[$.]/g, '').replace(/,/g, '.');
-        const rawStock = String(row[5] || '0');
-        
-        return {
-            Codigo: String(row[0] || '').trim(),
-            Nombre_Producto: String(row[1] || '').trim(),
-            Descripcion: String(row[2] || '').trim(),
-            Categoria: String(row[3] || '').trim(),
-            Precio: parseFloat(rawPrice) || 0, // Asegura que Precio es un número
-            Stock: parseInt(rawStock) || 0, // Asegura que Stock es un entero
-            Foto_URL: cleanedDriveUrl 
-        };
-    }).filter(product => 
-        product.Nombre_Producto && 
-        product.Foto_URL && 
-        product.Foto_URL.startsWith('http')
-    ); // Filtro estricto
-}
-
-
 // ====================================================================
-// 2. LÓGICA DE CARGA E INICIALIZACIÓN
+// 1. Traer datos desde Sheets (LOGICA DE MAPEO MEJORADA)
 // ====================================================================
-
 async function fetchCatalogue() {
     const res = await fetch(SHEET_URL);
-    
-    if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Detalles del Error (JSON):", errorData);
-        throw new Error(`Error HTTP ${res.status}: ${errorData.error.message}`);
-    }
-    
+    if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
     const data = await res.json();
     const rows = data.values || [];
 
-    // Usamos la función de mapeo robusta
-    return mapSheetDataToProducts(rows);
+    // Mapeo de filas a objetos con correcciones de URL y parseo
+    return rows.map(row => {
+        
+        // 1. LIMPIEZA DE DATOS: Aseguramos que Precio y Stock sean números válidos
+        const rawPrice = String(row[4] || '0').replace(/[$.]/g, '').replace(/,/g, '.');
+        const rawStock = String(row[5] || '0');
+        
+        // 2. CORRECCIÓN DE IMAGEN: Usamos la función para Drive
+        const photoUrl = convertDriveUrl(row[6]); 
+
+        return {
+            Codigo: row[0],
+            Nombre_Producto: row[1],
+            Descripcion: row[2],
+            Categoria: row[3],
+            Precio: parseFloat(rawPrice) || 0, // Más robusto
+            Stock: parseInt(rawStock) || 0, // Más robusto
+            Foto_URL: photoUrl // ¡Usamos la URL corregida!
+        };
+    });
 }
 
-async function init() {
-    try {
-        const products = await fetchCatalogue();
-        const categories = getUniqueCategories(products);
-        renderCategoryTabs(categories, products);
-        renderProducts(products);
-    } catch (err) {
-        catalogueGrid.innerHTML = `<p style="color:red; text-align:center; grid-column: 1 / -1;">❌ Error cargando catálogo: ${err.message}</p>`;
-        console.error("FALLA CRÍTICA DE INICIALIZACIÓN:", err);
-    }
-}
-
-
 // ====================================================================
-// 3. RENDERING (Se mantiene la lógica original)
+// 2. Renderizar catálogo (LOGICA ORIGINAL CONSERVADA)
 // ====================================================================
-
 function getUniqueCategories(products) {
     const categories = new Set(products.map(p => p.Categoria).filter(c => c && c.trim() !== ""));
     return ["TODOS", ...Array.from(categories)];
@@ -134,14 +99,13 @@ function renderCategoryTabs(categories, products) {
 
         categoryTabsContainer.appendChild(button);
     });
-    const todosButton = categoryTabsContainer.querySelector('[data-category="TODOS"]');
-    if (todosButton) todosButton.classList.add("active");
+    categoryTabsContainer.querySelector('[data-category="TODOS"]').classList.add("active");
 }
 
 function renderProducts(products) {
     catalogueGrid.innerHTML = "";
     if (products.length === 0) {
-        catalogueGrid.innerHTML = "<p style='grid-column: 1 / -1; text-align:center;'>No hay productos disponibles en este momento.</p>";
+        catalogueGrid.innerHTML = "<p style='grid-column: 1 / -1; text-align:center;'>No hay productos.</p>";
         return;
     }
 
@@ -149,26 +113,25 @@ function renderProducts(products) {
         const isAvailable = product.Stock > 0;
         const whatsappText = `Hola, me interesa "${product.Nombre_Producto}" (Código: ${product.Codigo}).`;
         const whatsappLink = `${WHATSAPP_BASE_URL}?text=${encodeURIComponent(whatsappText)}`;
+        
+        // Mensaje de stock detallado
+        const stockMessage = isAvailable 
+            ? `Disponible: ${product.Stock} uds.` 
+            : "Agotado Temporalmente";
 
         const card = document.createElement("div");
         card.className = "product-card";
-        
-        // Mensaje de stock más detallado
-        const stockMessage = isAvailable
-            ? `<span class="product-stock">Disponible: ${product.Stock} uds.</span>`
-            : `<span class="product-stock out-of-stock">Agotado Temporalmente</span>`;
-        
         card.innerHTML = `
             <img src="${product.Foto_URL}" alt="${product.Nombre_Producto}" class="product-image" loading="lazy">
             <div class="product-details">
-                <h3 class="product-name">${product.Nombre_Producto}</h3>
-                <p class="product-category">${product.Categoria}</p>
-                <p class="product-code">Cód: ${product.Codigo}</p>
-                <p class="product-description">${product.Descripcion}</p>
+                <h3>${product.Nombre_Producto}</h3>
+                <p>${product.Categoria}</p>
+                <p>Cód: ${product.Codigo}</p>
+                <p>${product.Descripcion}</p>
                 <p class="product-price">$${Number(product.Precio).toLocaleString("es-VE", { minimumFractionDigits: 2 })}</p>
-                <p>${stockMessage}</p>
+                <p class="${isAvailable ? 'product-stock' : 'product-stock out-of-stock'}">${stockMessage}</p>
                 ${isAvailable 
-                    ? `<a href="${whatsappLink}" target="_blank" rel="noopener noreferrer" style="text-decoration:none; display: block;"><button class="whatsapp-button">Comprar por WhatsApp</button></a>`
+                    ? `<a href="${whatsappLink}" target="_blank" rel="noopener noreferrer"><button class="whatsapp-button">Comprar por WhatsApp</button></a>`
                     : `<button class="whatsapp-button" disabled>Agotado</button>`}
             </div>
         `;
@@ -176,5 +139,19 @@ function renderProducts(products) {
     });
 }
 
-// Inicialización del catálogo
+// ====================================================================
+// 3. Inicialización
+// ====================================================================
+async function init() {
+    try {
+        const products = await fetchCatalogue();
+        const categories = getUniqueCategories(products);
+        renderCategoryTabs(categories, products);
+        renderProducts(products);
+    } catch (err) {
+        catalogueGrid.innerHTML = `<p style="color:red; text-align:center; grid-column: 1 / -1;">❌ Error cargando catálogo: ${err.message}</p>`;
+        console.error("FALLA DE INICIALIZACIÓN:", err);
+    }
+}
+
 init();
