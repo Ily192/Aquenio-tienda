@@ -9,15 +9,15 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-  <header class="header">
+  <header class="header text-center py-10 px-4">
     
     <div class="flex flex-col md:flex-row justify-center items-center max-w-6xl mx-auto p-4 md:p-8">
         
-        <div class="w-full md:w-1/3 flex justify-center md:justify-start mb-4 md:mb-0">
+        <div class="w-full md:w-1/4 flex justify-center md:justify-start mb-4 md:mb-0">
             <img src="Logo Aquenio.jpg" alt="Logo de Aquenio" class="logo w-24 h-24 md:w-32 md:h-32 rounded-full object-cover shadow-lg border-2 border-white">
         </div>
 
-        <div class="w-full md:w-2/3 text-center md:text-center">
+        <div class="w-full md:w-3/4 text-center">
             <h1 class="font-bold text-3xl md:text-4xl lg:text-5xl mb-1 text-white">Comienza tu resplandor con Aquenio</h1>
             <p class="italic text-white/90 text-sm md:text-base lg:text-lg">
                 Pijamas, Maquillaje y Joyería: Donde el descanso se encuentra con la belleza y el estilo.
@@ -27,11 +27,15 @@
     </div>
 </header>
 
-  <div class="category-tabs" id="category-tabs"></div>
-  <main class="catalogue-grid" id="catalogue-grid"></main>
+<div id="category-tabs" class="category-tabs flex justify-center flex-wrap py-5 mb-5 bg-white shadow-sm">
+    </div>
+
+<div id="catalogue-grid" class="catalogue-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-4 max-w-6xl mx-auto mb-10">
+    </div>
 
   <script src="script.js"></script>
 </body>
 </html>
+
 
 
