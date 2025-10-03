@@ -15,7 +15,7 @@ const categoryTabsContainer = document.getElementById("category-tabs");
 
 
 // ====================================================================
-// 🛠️ FUNCIÓN CRÍTICA: CORRECCIÓN DE URL DE DRIVE
+// 🛠️ FUNCIÓN DE CORRECCIÓN DE URL DE DRIVE (NUEVA FUNCIÓN)
 // ====================================================================
 
 /**
@@ -42,7 +42,7 @@ function convertDriveUrl(url) {
 
 
 // ====================================================================
-// 1. Traer datos desde Sheets (LOGICA DE MAPEO MEJORADA)
+// 1. Traer datos desde Sheets (LOGICA DE MAPEO CON MEJORAS)
 // ====================================================================
 async function fetchCatalogue() {
     const res = await fetch(SHEET_URL);
@@ -50,14 +50,14 @@ async function fetchCatalogue() {
     const data = await res.json();
     const rows = data.values || [];
 
-    // Mapeo de filas a objetos con correcciones de URL y parseo
+    // Mapeo de filas a objetos
     return rows.map(row => {
         
         // 1. LIMPIEZA DE DATOS: Aseguramos que Precio y Stock sean números válidos
         const rawPrice = String(row[4] || '0').replace(/[$.]/g, '').replace(/,/g, '.');
         const rawStock = String(row[5] || '0');
         
-        // 2. CORRECCIÓN DE IMAGEN: Usamos la función para Drive
+        // 2. CORRECCIÓN DE IMAGEN: Usamos la función para Drive. Si no es de Drive, retorna la URL original.
         const photoUrl = convertDriveUrl(row[6]); 
 
         return {
@@ -65,15 +65,16 @@ async function fetchCatalogue() {
             Nombre_Producto: row[1],
             Descripcion: row[2],
             Categoria: row[3],
-            Precio: parseFloat(rawPrice) || 0, // Más robusto
-            Stock: parseInt(rawStock) || 0, // Más robusto
-            Foto_URL: photoUrl // ¡Usamos la URL corregida!
+            Precio: parseFloat(rawPrice) || 0, // ¡Parseo robusto!
+            Stock: parseInt(rawStock) || 0, // ¡Parseo robusto!
+            Foto_URL: photoUrl // ¡Ahora funciona para Drive y URLs directas!
         };
     });
 }
 
+
 // ====================================================================
-// 2. Renderizar catálogo (LOGICA ORIGINAL CONSERVADA)
+// 2. Renderizar catálogo (LOGICA ORIGINAL CONSERVADA Y FUNCIONAL)
 // ====================================================================
 function getUniqueCategories(products) {
     const categories = new Set(products.map(p => p.Categoria).filter(c => c && c.trim() !== ""));
@@ -127,7 +128,7 @@ function renderProducts(products) {
                 <h3>${product.Nombre_Producto}</h3>
                 <p>${product.Categoria}</p>
                 <p>Cód: ${product.Codigo}</p>
-                <p>${product.Descripcion}</p>
+                <p class="product-description">${product.Descripcion}</p>
                 <p class="product-price">$${Number(product.Precio).toLocaleString("es-VE", { minimumFractionDigits: 2 })}</p>
                 <p class="${isAvailable ? 'product-stock' : 'product-stock out-of-stock'}">${stockMessage}</p>
                 ${isAvailable 
