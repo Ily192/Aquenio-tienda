@@ -159,3 +159,4 @@ function renderProducts(products) {
 
 // Inicializa el proceso al cargar la página
 fetchAndRenderCatalogue();
+
