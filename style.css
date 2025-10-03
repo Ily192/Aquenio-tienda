@@ -1,12 +1,7 @@
 /* ==================================================================== */
-/* 1. CONFIGURACIÓN GLOBAL Y PALETA DE COLORES DE AQUENIO */
+/* 1. CONFIGURACIÓN GLOBAL Y PALETA DE COLORES DE AQUEÑO */
 /* ==================================================================== */
 
-/* Ajuste para el header - Simplificado con Tailwind */
-.header {
-    background-color: var(--rosa-emplumado); /* Tono base que evoca calma */
-}
-/* Tailwind necesita las variables de color definidas en CSS */
 :root {
     /* Paleta de Colores de Aquenio: */
     --rosa-emplumado: #E8C9D4; /* Base */
@@ -14,21 +9,20 @@
     --oro-rosa: #B76E79;    /* Acento/Joya */
     --blanco-crema: #FDF7F8; /* Base/Fondo */
 
-    /* Fuentes de apoyo (Basadas en el Brandbook) */
-    --font-sans: 'Raleway', sans-serif; /* Para títulos y cuerpo */
+    /* Fuentes de apoyo */
+    --font-sans: 'Raleway', sans-serif; 
 }
 
-/* Configuraciones base de la marca */
 body {
     font-family: var(--font-sans); 
     background-color: var(--blanco-crema); 
-    color: #4a4a4a; /* Color de texto oscuro y suave */
+    color: #4a4a4a; 
     line-height: 1.6;
+    margin: 0;
+    padding: 0;
 }
 
-/* Configuración para integrar los colores de Aquenio en Tailwind. 
-   Esto usa el bloque de configuración de Tailwind con las variables CSS.
-*/
+/* Configuramos Tailwind para usar las variables de marca */
 tailwind.config = {
     theme: {
         extend: {
@@ -47,23 +41,41 @@ tailwind.config = {
 
 /* --- Estilos personalizados para efectos o componentes no triviales --- */
 
-/* Estilo para stock no disponible (conservado de tu CSS) */
-.out-of-stock {
-    color: var(--oro-rosa); 
-}
-/* Estilo para el botón agotado */
-.out-of-stock-btn {
-    background-color: #ccc !important;
-    cursor: not-allowed !important;
+/* Estilos de botones de filtro */
+.tab-button {
+    background-color: transparent;
+    border: none;
+    color: #6c757d;
+    padding: 10px 20px;
+    margin: 5px 10px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    transition: color 0.3s, border-bottom 0.3s;
+    text-transform: uppercase;
 }
 
-/* Estilo para el botón activo del filtro (el foco principal de la UX) */
-.tab-button.active {
+/* Foco de UX en el botón activo/hover */
+.tab-button:hover, .tab-button.active {
     color: var(--oro-rosa); 
     border-bottom: 2px solid var(--oro-rosa);
 }
 
-.tab-button:hover {
-    color: var(--oro-rosa); 
+/* Estilos de stock/agotado */
+.product-stock {
+    font-weight: 600;
+}
+.product-stock.out-of-stock {
+    color: var(--oro-rosa); /* Usa el acento para indicar indisponibilidad */
 }
 
+/* Estilo para el botón agotado */
+.whatsapp-button.out-of-stock-btn {
+    background-color: #ccc !important;
+    cursor: not-allowed !important;
+}
+.whatsapp-button.out-of-stock-btn:hover {
+    background-color: #ccc !important;
+}
+
+/* Las clases .header, .catalogue-grid y .product-card se definen en el HTML/JS con Tailwind */
