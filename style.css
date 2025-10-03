@@ -1,81 +1,88 @@
 /* ==================================================================== */
-/* 1. CONFIGURACIÓN GLOBAL Y PALETA DE COLORES DE AQUEÑO */
+/* 🎨 PALETA DE COLORES Y ESTILOS BASE */
 /* ==================================================================== */
-
 :root {
-    /* Paleta de Colores de Aquenio: */
-    --rosa-emplumado: #E8C9D4; /* Base */
-    --lavanda-suave: #E4CDEB; /* Contraste/Posible uso futuro */
-    --oro-rosa: #B76E79;    /* Acento/Joya */
-    --blanco-crema: #FDF7F8; /* Base/Fondo */
-
-    /* Fuentes de apoyo */
-    --font-sans: 'Raleway', sans-serif; 
+    --rosa-emplumado: #E8C9D4; 
+    --lavanda-suave: #E4CDEB; 
+    --oro-rosa: #B76E79;    
+    --blanco-crema: #FDF7F8;
+    --gris-neutro: #6B7280; 
+    --verde-whatsapp: #25D366;
 }
 
 body {
-    font-family: var(--font-sans); 
-    background-color: var(--blanco-crema); 
-    color: #4a4a4a; 
-    line-height: 1.6;
+    font-family: 'Raleway', sans-serif;
+    background-color: var(--blanco-crema);
+    color: var(--gris-neutro);
     margin: 0;
     padding: 0;
+    line-height: 1.6;
 }
 
-/* Configuramos Tailwind para usar las variables de marca */
-tailwind.config = {
-    theme: {
-        extend: {
-            colors: {
-                'rosa-emplumado': 'var(--rosa-emplumado)',
-                'lavanda-suave': 'var(--lavanda-suave)',
-                'oro-rosa': 'var(--oro-rosa)',
-                'blanco-crema': 'var(--blanco-crema)',
-            },
-            fontFamily: {
-                sans: ['Raleway', 'sans-serif'],
-            }
-        }
-    }
-}
-
-/* --- Estilos personalizados para efectos o componentes no triviales --- */
-
-/* Estilos de botones de filtro */
+/* ==================================================================== */
+/* 🟣 TABS DE CATEGORÍA */
+/* ==================================================================== */
 .tab-button {
     background-color: transparent;
     border: none;
-    color: #6c757d;
-    padding: 10px 20px;
-    margin: 5px 10px;
+    color: var(--gris-neutro);
+    padding: 8px 16px;
+    margin: 4px 8px;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 0.9rem;
     font-weight: 600;
-    transition: color 0.3s, border-bottom 0.3s;
+    transition: all 0.3s ease;
     text-transform: uppercase;
+    border-radius: 6px;
 }
 
-/* Foco de UX en el botón activo/hover */
 .tab-button:hover, .tab-button.active {
-    color: var(--oro-rosa); 
-    border-bottom: 2px solid var(--oro-rosa);
+    color: white;
+    background-color: var(--oro-rosa);
 }
 
-/* Estilos de stock/agotado */
+/* ==================================================================== */
+/* 🟢 PRODUCTOS Y STOCK */
+/* ==================================================================== */
 .product-stock {
     font-weight: 600;
+    font-size: 0.85rem;
 }
 .product-stock.out-of-stock {
-    color: var(--oro-rosa); /* Usa el acento para indicar indisponibilidad */
+    color: var(--oro-rosa);
 }
 
-/* Estilo para el botón agotado */
+/* ==================================================================== */
+/* 🟢 BOTÓN WHATSAPP */
+/* ==================================================================== */
+.whatsapp-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: none;
+    font-size: 0.95rem;
+    border-radius: 12px;
+    background-color: var(--verde-whatsapp);
+    color: white;
+    transition: background 0.3s ease, transform 0.2s ease;
+    box-shadow: 0px 3px 6px rgba(0,0,0,0.15);
+}
+
+.whatsapp-button:hover {
+    background-color: #1ebe5d;
+    transform: translateY(-2px);
+}
+
+.whatsapp-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Botón Agotado */
 .whatsapp-button.out-of-stock-btn {
-    background-color: #ccc !important;
+    background-color: #e5e7eb !important;
+    color: #9ca3af !important;
     cursor: not-allowed !important;
+    box-shadow: none;
 }
-.whatsapp-button.out-of-stock-btn:hover {
-    background-color: #ccc !important;
-}
-
-/* Las clases .header, .catalogue-grid y .product-card se definen en el HTML/JS con Tailwind */
