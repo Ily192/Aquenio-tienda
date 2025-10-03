@@ -161,3 +161,4 @@ function renderProducts(products) {
 fetchAndRenderCatalogue();
 
 
+
