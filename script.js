@@ -1,33 +1,42 @@
 // ====================================================================
-// CONFIGURACIÓN DE GOOGLE SHEETS Y WHATSAPP
-// ¡ESTE CÓDIGO YA ESTÁ CONFIGURADO CON TUS DATOS!
+// 1. CONFIGURACIÓN DE AQUEÑO
 // ====================================================================
 
-// El ID de tu Google Sheet (la cadena corta de tu URL de edición)
-//const SHEET_ID = '1BA_-hmC9Hei4P0yeRv97eP47_nOe0J_v35zDkVHKAYU'; 
-// El GID de la pestaña 'Catalogo Web' (identificador numérico)
-//const GID = '2141987590'; 
+// UTILIZANDO LA URL DE PUBLICACIÓN DE TU HOJA 'CATALOGO WEB'
+// Nota: Esta URL es la más confiable para evitar errores de permisos.
+// Si tu catálogo deja de actualizarse, debes republicar la hoja en la web
+// (Archivo > Compartir > Publicar en la web).
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpBzcXwpv5ELk1kknmNkPBAJJToK92NLOiXV5EeG2u6KKjzeg0lCggeJ3ddwUZCnraVbfnstCKK834/pub?gid=2141987590&single=true&output=csv'; 
 
 // URL base de WhatsApp de Aquenio
 const WHATSAPP_BASE_URL = 'https://wa.me/584129878696'; 
 
-// Usar la URL de Publicación Codificada
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpBzcXwpv5ELk1kknmNkPBAJJToK92NLOiXV5EeG2u6KKjzeg0lCggeJ3ddwUZCnraVbfnstCKK834/pub?gid=2141987590&single=true&output=csv'; 
-// ====================================================================
-// LÓGICA DE CATÁLOGO (NO MODIFICAR)
-// ====================================================================
-
+// Referencias a los contenedores HTML
 const catalogueGrid = document.getElementById('catalogue-grid');
 const categoryTabsContainer = document.getElementById('category-tabs');
 
+// ====================================================================
+// 2. LÓGICA PRINCIPAL Y CONTROL DE FLUJO
+// ====================================================================
+
+/**
+ * Función principal: obtiene los datos, los procesa y renderiza el catálogo.
+ */
 async function fetchAndRenderCatalogue() {
     try {
         const response = await fetch(SHEET_CSV_URL);
+        
+        // Verifica si la respuesta HTTP es exitosa (código 200)
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}. Verifica que la URL del Sheets sea correcta y esté publicada.`);
+        }
+        
         const csvData = await response.text();
         const products = parseCSV(csvData); 
         
         if (products.length === 0) {
-             throw new Error('No se encontraron productos válidos en el Sheets.');
+             // Esto se activa si solo hay encabezados o si el contenido está vacío
+             throw new Error('La hoja de cálculo está vacía o no se encontraron productos válidos.');
         }
 
         const categories = getUniqueCategories(products);
@@ -35,39 +44,50 @@ async function fetchAndRenderCatalogue() {
         renderProducts(products);
 
     } catch (error) {
-        console.error("Error al obtener los datos del catálogo:", error);
+        console.error("Error crítico al obtener el catálogo:", error);
+        // Mensaje de error mejorado para el usuario final
         catalogueGrid.innerHTML = `
-            <p style="grid-column: 1 / -1; text-align:center; padding: 50px 0; color: var(--oro-rosa);">
-                ¡Oh no! No pudimos cargar el catálogo.
-                <br>Por favor, asegúrate de que tu hoja de Google Sheets esté publicada en la web (Archivo > Compartir > Publicar en la web).
+            <p style="grid-column: 1 / -1; text-align:center; padding: 50px 0; color: var(--oro-rosa); font-weight: 600;">
+                ¡Oh no! No pudimos cargar el catálogo de Aquenio.
+                <br>La causa más común es que la hoja de Google Sheets no está publicada correctamente.
+                <br>Por favor, revisa **Archivo > Compartir > Publicar en la web** para tu pestaña "Catalogo Web".
             </p>`;
     }
 }
 
-// Orden de columnas: 0: Código | 1: Nombre | 2: Descripción | 3: Categoría | 4: Precio | 5: Cantidad | 6: Foto URL
+// ====================================================================
+// 3. PROCESAMIENTO DE DATOS (ORDEN DE COLUMNAS DEL USUARIO)
+// ====================================================================
+// Orden: 0: Código | 1: Nombre | 2: Descripción | 3: Categoría | 4: Precio | 5: Cantidad | 6: Foto URL
+
+/**
+ * Parsea el texto CSV en un array de objetos JavaScript.
+ * Se enfoca en el orden de las columnas del usuario para una máxima fiabilidad.
+ */
 function parseCSV(csvText) {
-    // Manejo básico para limpiar el texto y dividir por línea.
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
-    if (lines.length <= 1) return []; 
+    if (lines.length <= 1) return []; // Solo la línea de encabezado o menos
     
     const products = [];
     
     for (let i = 1; i < lines.length; i++) {
-        // Usa regex para manejar comas dentro de comillas (si las hay en descripciones)
+        // Regex robusta para manejar comas dentro de descripciones entre comillas
         const data = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
         
+        // Debe tener 7 o más columnas para ser un producto completo
         if (data.length >= 7) { 
             const product = {};
             
-            // Función auxiliar para limpiar y despojar las comillas
+            // Función auxiliar para limpiar espacios y despojar las comillas
             const clean = (val) => val ? val.trim().replace(/"/g, '') : '';
             
+            // Mapeo fijo por índice para robustez:
             product.Codigo = clean(data[0]); 
             product.Nombre_Producto = clean(data[1]); 
             product.Descripcion = clean(data[2]);
             product.Categoria = clean(data[3]); 
             
-            // Conversión de precio a número (asumiendo formato simple)
+            // Conversión de precio a número
             product.Precio = parseFloat(clean(data[4]).replace(/[$.]/g, '').replace(/,/g, '')) || 0; 
             
             // Conversión de stock a entero
@@ -75,7 +95,7 @@ function parseCSV(csvText) {
             
             product.Foto_URL = clean(data[6]); 
 
-            // Solo agregamos productos con nombre y una URL de foto válida
+            // Filtro de calidad: Solo productos con nombre y una URL de foto real
             if (product.Nombre_Producto && product.Foto_URL.startsWith('http')) { 
                  products.push(product);
             }
@@ -84,17 +104,26 @@ function parseCSV(csvText) {
     return products;
 }
 
+// ====================================================================
+// 4. RENDERING (PESTAÑAS Y PRODUCTOS)
+// ====================================================================
+
+/**
+ * Extrae categorías únicas, filtrando valores vacíos.
+ */
 function getUniqueCategories(products) {
-    const categories = new Set(products.map(p => p.Categoria).filter(c => c && c.trim() !== ''));
+    // Filtra las categorías vacías y de encabezado
+    const categories = new Set(products.map(p => p.Categoria).filter(c => c && c.trim() !== '' && c.trim().toUpperCase() !== 'CATEGORÍA'));
     return ['TODOS', ...Array.from(categories)]; 
 }
 
+/**
+ * Genera dinámicamente las pestañas de categoría (filtros).
+ */
 function renderCategoryTabs(categories, products) {
     categoryTabsContainer.innerHTML = '';
     
-    const cleanCategories = categories.filter(c => c && c.trim().toUpperCase() !== 'CATEGORÍA'); 
-
-    cleanCategories.forEach(category => {
+    categories.forEach(category => {
         const button = document.createElement('button');
         button.className = 'tab-button';
         button.textContent = category.toUpperCase();
@@ -118,6 +147,9 @@ function renderCategoryTabs(categories, products) {
 }
 
 
+/**
+ * Dibuja las tarjetas de producto en el contenedor de mosaico.
+ */
 function renderProducts(products) {
     catalogueGrid.innerHTML = ''; 
     
@@ -164,5 +196,9 @@ function renderProducts(products) {
     });
 }
 
-fetchAndRenderCatalogue();
+// ====================================================================
+// INICIO
+// ====================================================================
 
+// Inicializa el proceso al cargar la página
+fetchAndRenderCatalogue();
