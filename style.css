@@ -1,27 +1,174 @@
-/* Paleta de Colores de Aquenio: */
-/* --oro-rosa: #B76E79; (Acento/Joya) */
-/* --rosa-emplumado: #E8C9D4; (Base) */
-/* (El resto de los colores se usan para contraste) */
+/* ==================================================================== */
+/* 1. CONFIGURACIÓN GLOBAL Y PALETA DE COLORES DE AQUEÑO */
+/* ==================================================================== */
+
+:root {
+    /* Paleta de Colores de Aquenio: */
+    --rosa-emplumado: #E8C9D4; /* Base */
+    --lavanda-suave: #E4CDEB; /* Contraste/Posible uso futuro */
+    --oro-rosa: #B76E79;    /* Acento/Joya */
+    --blanco-crema: #FDF7F8; /* Base/Fondo */
+}
 
 body {
-    font-family: 'Raleway', sans-serif;
-    background-color: var(--blanco-crema);
-    color: #4a4a4a;
+    font-family: 'Raleway', sans-serif; /* Fuente para Títulos y Cuerpo de Texto */
+    background-color: var(--blanco-crema); /* Fondo cálido y suave */
+    color: #4a4a4a; /* Color de texto oscuro y suave */
     margin: 0;
     padding: 0;
     line-height: 1.6;
 }
 
-:root {
-    --rosa-emplumado: #E8C9D4;
-    --lavanda-suave: #E4CDEB; /* Se mantiene para posible uso futuro */
-    --oro-rosa: #B76E79;
-    --blanco-crema: #FDF7F8;
+/* --- Encabezado --- */
+.header {
+    text-align: center;
+    padding: 40px 20px 20px;
+    background-color: var(--rosa-emplumado); /* Tono base que evoca calma */
+    color: white;
 }
 
-/* ... (Todo el CSS de la respuesta anterior se mantiene sin cambios) ... */
+.header h1 {
+    font-weight: 700;
+    color: white;
+    margin-bottom: 5px;
+}
 
-/* --- Botón de Acción (Comprar por WhatsApp) --- */
+.header p {
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.logo {
+    max-width: 150px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+/* ==================================================================== */
+/* 2. PESTAÑAS DE CATEGORÍA (FILTROS) */
+/* ==================================================================== */
+
+.category-tabs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 20px 0;
+    margin-bottom: 20px;
+    background-color: white; /* Para que resalten sobre el fondo */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.tab-button {
+    background-color: transparent;
+    border: none;
+    color: #6c757d;
+    padding: 10px 20px;
+    margin: 5px 10px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    transition: color 0.3s, border-bottom 0.3s;
+    text-transform: uppercase;
+}
+
+.tab-button:hover, .tab-button.active {
+    color: var(--oro-rosa); /* El brillo cálido y moderno del Oro Rosa */
+    border-bottom: 2px solid var(--oro-rosa);
+}
+
+/* ==================================================================== */
+/* 3. CATÁLOGO Y TARJETAS DE PRODUCTO (MOSAICO/GRID) */
+/* ==================================================================== */
+
+/* --- Mosaico del Catálogo (Grid) --- */
+.catalogue-grid {
+    display: grid;
+    /* Diseño responsivo: 2 columnas por defecto, 3 en pantallas grandes */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    padding: 0 5%;
+    max-width: 1200px;
+    margin: 0 auto 50px;
+}
+
+/* --- Tarjeta de Producto --- */
+.product-card {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-align: center;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(183, 110, 121, 0.2); /* Sutil elevación con el acento Oro Rosa */
+}
+
+.product-image {
+    width: 100%;
+    height: 300px; /* Altura fija para mantener el diseño de mosaico uniforme */
+    object-fit: cover;
+    display: block;
+}
+
+.product-details {
+    padding: 20px;
+}
+
+.product-category {
+    font-size: 0.8em;
+    color: var(--oro-rosa);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.product-name {
+    font-weight: 600;
+    font-size: 1.1em;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.product-code {
+    font-size: 0.9em;
+    color: #999;
+    margin-bottom: 10px;
+}
+
+.product-description {
+    font-size: 1em;
+    color: #666;
+    margin-bottom: 15px;
+    /* Estilo sereno y accesible */
+}
+
+.product-price {
+    font-size: 1.4em;
+    color: #333;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.product-stock {
+    font-size: 0.9em;
+    font-weight: 600;
+}
+
+.product-stock {
+    color: green; /* Para stock disponible */
+}
+
+.out-of-stock {
+    color: var(--oro-rosa); /* Usa el acento para indicar indisponibilidad */
+}
+
+/* ==================================================================== */
+/* 4. BOTÓN DE WHATSAPP (COMPRAR) */
+/* ==================================================================== */
+
 .whatsapp-button {
     background-color: var(--oro-rosa); 
     color: white;
@@ -41,7 +188,7 @@ body {
     background-color: #a05c65; /* Un tono más oscuro del Oro Rosa al pasar el mouse */
 }
 
-/* Estilo para el botón de producto agotado (opcional) */
+/* Estilo para el botón de producto agotado (inactivo) */
 .whatsapp-button.out-of-stock-btn {
     background-color: #ccc;
     cursor: not-allowed;
@@ -50,4 +197,17 @@ body {
 .out-of-stock-btn:hover {
     background-color: #ccc;
 }
-/* ... (El resto del CSS de la respuesta anterior) ... */
+
+/* ==================================================================== */
+/* 5. RESPONSIVE DESIGN (MÓVILES) */
+/* ==================================================================== */
+
+@media (max-width: 768px) {
+    .catalogue-grid {
+        grid-template-columns: 1fr; /* Una sola columna en móviles */
+        padding: 0 20px;
+    }
+    .product-image {
+        height: 250px;
+    }
+}
