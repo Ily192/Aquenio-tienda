@@ -5,7 +5,7 @@ const SHEET_ID = "1yj-uxy_puPfjcOZbqjeUBuMjRCwHsjSh6UNNEEmikvk";
 const API_KEY = "AIzaSyCZS-GAGD2ErO1ELvT0I7_KguW_83MSBl4"; 
 const RANGE = "Catalogo!A2:G";
 const SHEET_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(RANGE)}?key=${API_KEY}`;
-const WHATSAPP_BASE_URL = "https://wa.me/584129878696";
+const WHATSAPP_BASE_URL = "https://wa.me/584126540256";
 
 const catalogueGrid = document.getElementById("catalogue-grid");
 const categoryTabsContainer = document.getElementById("category-tabs");
@@ -137,3 +137,4 @@ async function init() {
     }
 }
 init();
+
